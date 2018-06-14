@@ -1,6 +1,7 @@
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import utils.FileUtil;
 import utils.IMessage;
 
 import java.util.HashMap;
@@ -26,8 +27,9 @@ public class SmergielJavaListener extends SmergielBaseListener implements IMessa
         main.append("private static Scanner read = new Scanner(System.in);");
         main.append("public static void main(String[] args) {");
 
-        if(ctx.listOfStatement()!=null)
+        if(ctx.listOfStatement()!=null){
             ctx.listOfStatement().statement().forEach(s -> main.append(statement(s)));
+        }
     }
 
     @Override public void exitProgram(SmergielParser.ProgramContext ctx) {
@@ -35,7 +37,7 @@ public class SmergielJavaListener extends SmergielBaseListener implements IMessa
         main.append(methods.toString());
         main.append("}");
         checkIdDeclared();
-//        FileUtil.write("Test"+".java", main.toString());
+        FileUtil.write("Test"+".java", main.toString());
     }
 
     @Override public void exitMethod(SmergielParser.MethodContext ctx) {
@@ -74,7 +76,15 @@ public class SmergielJavaListener extends SmergielBaseListener implements IMessa
         return "return 0;";
     }
 
-    public String ifStatement(SmergielParser.ComparisonContext comparisonContext, Iterable<SmergielParser.RightComparisonContext> rightComparisons,  Iterable<SmergielParser.StatementContext> statements){
+    public String elseSentences(Iterable<SmergielParser.StatementContext> statements){
+        final StringBuilder builder = new StringBuilder();
+        builder.append("else {");
+        statements.forEach(s -> builder.append(statement(s)));
+        builder.append("}");
+        return builder.toString();
+    }
+
+    public String ifStatement(SmergielParser.ComparisonContext comparisonContext, Iterable<SmergielParser.RightComparisonContext> rightComparisons, Iterable<SmergielParser.StatementContext> statements, SmergielParser.ElseSentencesContext elseSentences){
         final String comparison = comparisonToJava(comparisonContext, rightComparisons);
         final StringBuilder builder = new StringBuilder();
         builder.append(String.format("if(%s){",comparison));
@@ -82,6 +92,9 @@ public class SmergielJavaListener extends SmergielBaseListener implements IMessa
         statements.forEach(s -> builder.append(statement(s)));
 
         builder.append("}");
+        if(elseSentences!=null){
+            builder.append(elseSentences(elseSentences.listOfStatement().statement()));
+        }
         return builder.toString();
     }
 
@@ -90,7 +103,7 @@ public class SmergielJavaListener extends SmergielBaseListener implements IMessa
         if(statement.assignStatement()!=null)
             builder.append(assignStatement(statement.assignStatement().Identifier(), statement.assignStatement().expression()));
         else if(statement.ifStatement()!=null)
-            builder.append(ifStatement(statement.ifStatement().comparison(), statement.ifStatement().rightComparison(), statement.ifStatement().listOfStatement().statement()));
+            builder.append(ifStatement(statement.ifStatement().comparison(), statement.ifStatement().rightComparison(), statement.ifStatement().listOfStatement().statement(), statement.ifStatement().elseSentences()));
         else if(statement.readStatement()!=null)
             builder.append(readStatement(statement.readStatement().listOfIdentifier()));
         else if(statement.writeStatement()!=null)
