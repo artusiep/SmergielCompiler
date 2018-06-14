@@ -55,7 +55,6 @@ public final class Application implements IMessage {
         if(compilerArgs.contains("jar")) {
             System.out.println(BUILDING_JAR);
             microClass.compileJar();
-
         }
 
         System.out.println(COMPILATION_OK);
