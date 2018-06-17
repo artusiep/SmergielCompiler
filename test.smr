@@ -1,5 +1,6 @@
 func writeNum(argument)
     write(argument);
+    return 0;
 end
 
 
@@ -12,9 +13,10 @@ begin
     else
         arg2 := 4;
     end
-
+    write(factorial(5));
     num := readNum();
     write(arg1,(4*arg2)/2);
+    return 45;
 end
 
 func readNum
@@ -24,10 +26,8 @@ end
 
 func factorial(n)
     if(n <= 1.0)
-        a := 1.0;
-        return a;
+        return 1.0;
     else
-        b := factorial(n-1) * n;
-        return b;
+        return factorial(n-1) * n;
     end
 end
